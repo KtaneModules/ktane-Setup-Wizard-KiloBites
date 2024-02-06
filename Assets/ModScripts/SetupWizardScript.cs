@@ -13,12 +13,15 @@ public class SetupWizardScript : MonoBehaviour {
 	public KMAudio Audio;
 	public KMBombModule Module;
 
-	public KMSelectable[] mainButtons, keyboardLetters, keyboardNumbers;
-	public KMSelectable backSpace, shift, reset;
+	public KMSelectable[] mainButtons, keyboardLetters, keyboardNumbers, folderButtons, accountPrompts;
+	public KMSelectable backSpace, shift, reset, submit;
+
+	public GameObject window;
+	public GameObject[] pages;
 
 	static int moduleIdCounter = 1;
 	int moduleId;
-	private bool moduleSolved, isActivated, moduleSelected, canTypeUser, canTypePassword, shiftedLetters, canSubmit;
+	private bool moduleSolved, isActivated, moduleSelected, canTypeUser, canTypePassword, shiftedLetters, canSubmit, canSolve;
 
 	private Folder[] folders =
 	{
@@ -26,7 +29,7 @@ public class SetupWizardScript : MonoBehaviour {
 		new Folder("Pictures", new int[] { 3, 5 }),
 		new Folder("Documents", new int[] { 0, 1 }),
 		new Folder("Music", new int[] { 0, 5 }),
-		new Folder("Homework", new int[] { 2 }),
+		new Folder("Homework", null, 2),
 		new Folder("Videos", new int[] { 2, 4 })
 	};
 
@@ -62,6 +65,10 @@ public class SetupWizardScript : MonoBehaviour {
 	
 	void Start()
     {
+		currentPos = Range(0, 6);
+
+		var shufflingFolders = Enumerable.Range(0, 6).Where(x => x != currentPos).ToList().Shuffle().Take(2).ToArray();
+
 
     }
 
