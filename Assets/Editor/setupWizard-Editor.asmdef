@@ -1,0 +1,10 @@
+{
+  "name": "setupWizard-Editor",
+  "references": [
+    "setupWizard"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": []
+}
