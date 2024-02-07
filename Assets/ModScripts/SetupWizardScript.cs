@@ -21,7 +21,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 	static int moduleIdCounter = 1;
 	int moduleId;
-	private bool moduleSolved, isActivated, moduleSelected, canTypeUser, canTypePassword, shiftedLetters, canSubmit, canSolve;
+	private bool moduleSolved, isActivated, moduleSelected, canTypeUser, canTypePassword, shiftedLetters = true, canSubmit, canSolve;
 
 	private Folder[] folders =
 	{
@@ -34,13 +34,63 @@ public class SetupWizardScript : MonoBehaviour {
 	};
 
 	private Folder startingFolder;
-	private Folder[] swappedFolders;
+	private Folder[] shuffledFolders;
 
 	private ObtainUsername username;
 
 	private int currentPos;
 
 	private string usernameInput, passwordInput, passwordAsterisk;
+
+	private Folder[] SwapFolders(int[] swaps)
+	{
+		var foldersSwapped = new Folder[2];
+
+		var foldersToSwap = swaps.Select(x => folders[x].FolderName).ToArray();
+		var foldersDirectories = swaps.Select(x => folders[x].Directories).ToArray();
+		var foldersSingleDirectory = swaps.Select(x => folders[x].SingleDirectory).ToArray();
+
+		int ix = 0;
+
+		while (ix < 2)
+		{
+			if (foldersDirectories[ix] == null)
+			{
+				if (ix == 0)
+				{
+					var temp = foldersToSwap[1];
+
+					foldersSwapped[ix] = new Folder(temp, null, foldersSingleDirectory[ix]);
+				}
+				else
+				{
+					var temp = foldersToSwap[0];
+
+					foldersSwapped[ix] = new Folder(temp, null, foldersSingleDirectory[ix]);
+				}
+				ix++;
+				continue;
+			}
+
+			if (ix == 0)
+			{
+				var temp = foldersToSwap[1];
+
+				foldersSwapped[ix] = new Folder(temp, foldersDirectories[ix]);
+			}
+			else
+			{
+				var temp = foldersToSwap[0];
+
+				foldersSwapped[ix] = new Folder(temp, foldersDirectories[ix]);
+			}
+
+			ix++;
+		}
+
+
+		return foldersSwapped;
+	}
 
 	private int GetLetterIndex(char c) => "QWERTYUIOPASDFGHJKLZXCVBNM".IndexOf(c);
 	private int GetNumberIndex(char n) => "1234567890".IndexOf(n);
@@ -67,9 +117,18 @@ public class SetupWizardScript : MonoBehaviour {
     {
 		currentPos = Range(0, 6);
 
-		var shufflingFolders = Enumerable.Range(0, 6).Where(x => x != currentPos).ToList().Shuffle().Take(2).ToArray();
+		shuffledFolders = folders;
 
+		var foldersToShuffle = Enumerable.Range(0, 6).Where(x => x != currentPos).ToList().Shuffle().Take(2).ToArray();
+		
+		var swappedFolders = SwapFolders(foldersToShuffle);
 
+		for (int i = 0; i < 2; i++)
+			shuffledFolders[foldersToShuffle[i]] = swappedFolders[i];
+
+		username = new ObtainUsername(foldersToShuffle.Select(x => folders[x]).ToArray(), folders, folders[currentPos]);
+
+		Log($"[Setup Wizard #{moduleId}] The swapped folders for step 1 were: {foldersToShuffle.Select(x => folders[x].FolderName).Join(", ")}");
     }
 
 	void KeyboardLetterPress(KMSelectable letter)
@@ -117,7 +176,21 @@ public class SetupWizardScript : MonoBehaviour {
 
 	void BackSpacePress()
 	{
+		if (moduleSolved || !isActivated || !canSubmit)
+			return;
 
+		if (canTypeUser)
+			if (usernameInput.Length > 0)
+			{
+				usernameInput.Remove(usernameInput.Length - 1);
+			}
+		
+		else if (canTypePassword)
+				if (passwordInput.Length > 0)
+				{
+					passwordInput.Remove(passwordInput.Length - 1);
+					passwordAsterisk.Remove(passwordAsterisk.Length - 1);
+				}
 	}
 
 	IEnumerator Startup()
