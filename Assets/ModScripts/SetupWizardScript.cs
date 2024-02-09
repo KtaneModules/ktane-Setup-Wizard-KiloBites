@@ -13,11 +13,14 @@ public class SetupWizardScript : MonoBehaviour {
 	public KMAudio Audio;
 	public KMBombModule Module;
 
-	public KMSelectable[] mainButtons, keyboardLetters, keyboardNumbers, folderButtons, accountPrompts;
+	public KMSelectable[] mainButtons, keyboardLetters, keyboardNumbers, folderButtons, accountPrompts, page2Buttons;
 	public KMSelectable backSpace, shift, reset, submit;
 
 	public GameObject window;
 	public GameObject[] pages;
+
+	public Material[] blackScreens, backgrounds, windowIcons;
+	public MeshRenderer windowIcon, screen;
 
 	static int moduleIdCounter = 1;
 	int moduleId;
@@ -38,9 +41,16 @@ public class SetupWizardScript : MonoBehaviour {
 
 	private ObtainUsername username;
 
+	private Expression[] generatedPuzzle, modifiedPuzzle;
+	private EquationSystem equationSystem;
+
 	private int currentPos;
 
 	private string usernameInput, passwordInput, passwordAsterisk;
+
+	private int[] randomIxes = new int[6], passwordDigits = new int[6];
+
+	private string FinalPassword(string s, int count) => s.Remove(count) + s.Substring(s.Length - count, count);
 
 	private Folder[] SwapFolders(int[] swaps)
 	{
@@ -92,6 +102,21 @@ public class SetupWizardScript : MonoBehaviour {
 		return foldersSwapped;
 	}
 
+	private Expression[] SwapAnswers(int[] swaps)
+	{
+		var swappedAnswers = new Expression[2];
+
+		var answersToSwap = swaps.Select(x => generatedPuzzle[x].Answer).ToArray();
+		var expressionALetters = swaps.Select(x => generatedPuzzle[x].NumIxA).ToArray();
+		var expressionEquationExp = swaps.Select(x => generatedPuzzle[x].EquationExpression).ToArray();
+		var expressionBLetters = swaps.Select(x => generatedPuzzle[x].NumIxB).ToArray();
+
+		for (int i = 0; i < 2; i++)
+			swappedAnswers[i] = new Expression(expressionALetters[i], expressionEquationExp[i], expressionBLetters[i], answersToSwap[i == 0 ? 1 : 0]);
+
+        return swappedAnswers;
+	}
+
 	private int GetLetterIndex(char c) => "QWERTYUIOPASDFGHJKLZXCVBNM".IndexOf(c);
 	private int GetNumberIndex(char n) => "1234567890".IndexOf(n);
 
@@ -106,7 +131,7 @@ public class SetupWizardScript : MonoBehaviour {
 		foreach (KMSelectable number in keyboardNumbers)
 			number.OnInteract += delegate () { KeyboardNumberPress(number); return false; };
 
-		Module.OnActivate += delegate () { StartCoroutine(Startup()); };
+		Module.OnActivate += delegate () { StopAllCoroutines(); StartCoroutine(Startup()); };
 		Module.GetComponent<KMSelectable>().OnFocus += delegate { moduleSelected = true; };
 		Module.GetComponent<KMSelectable>().OnDefocus += delegate { moduleSelected = false; };
 
@@ -115,6 +140,16 @@ public class SetupWizardScript : MonoBehaviour {
 	
 	void Start()
     {
+		foreach (var obj in pages)
+			obj.SetActive(false);
+
+		submit.gameObject.SetActive(false);
+
+		window.SetActive(false);
+
+		StartCoroutine(Initialize());
+
+
 		currentPos = Range(0, 6);
 
 		shuffledFolders = folders;
@@ -129,6 +164,8 @@ public class SetupWizardScript : MonoBehaviour {
 		username = new ObtainUsername(foldersToShuffle.Select(x => folders[x]).ToArray(), folders, folders[currentPos]);
 
 		Log($"[Setup Wizard #{moduleId}] The swapped folders for step 1 were: {foldersToShuffle.Select(x => folders[x].FolderName).Join(", ")}");
+
+
     }
 
 	void KeyboardLetterPress(KMSelectable letter)
@@ -195,7 +232,21 @@ public class SetupWizardScript : MonoBehaviour {
 
 	IEnumerator Startup()
 	{
-		yield return null;
+		Audio.PlaySoundAtTransform("Window Setup", transform);
+		screen.material = backgrounds.PickRandom();
+
+		yield return new WaitForSeconds(1);
+
+		window.SetActive(true);
+		pages[0].SetActive(true);
+		isActivated = true;
+	}
+
+	IEnumerator Initialize()
+	{
+		yield return new WaitForSeconds(0.5f);
+		screen.material = blackScreens[1];
+
 	}
 	
 	
