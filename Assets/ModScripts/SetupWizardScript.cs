@@ -43,16 +43,18 @@ public class SetupWizardScript : MonoBehaviour {
 
 	private ObtainUsername username;
 
-	private Expression[] generatedPuzzle, modifiedPuzzle;
-	private EquationSystem equationSystem;
+	private Expression[] generatedPuzzle = new Expression[6], modifiedPuzzle = new Expression[6];
+	private EquationSystem equationSystem = new EquationSystem();
 
 	private int currentPos, currentPage = 0, page2Ix = 0;
 
-	private string usernameInput, passwordInput, passwordAsterisk;
+	private string usernameInput = string.Empty, passwordInput = string.Empty, passwordAsterisk = string.Empty;
 
-	private int[] randomIxes = new int[6], passwordDigits = new int[6];
+	private int[] randomIxes = new int[6], passwordDigits;
+	private List<string> expressionsToDisplay;
 
-	private string FinalPassword(string s, int count) => s.Remove(count) + s.Substring(s.Length - count, count);
+	private string FinalPassword(string s, int count) => s.Substring(6 - count) + s.Substring(0, 6 - count);
+	private string finalPass;
 
 	private Folder[] SwapFolders(int[] swaps)
 	{
@@ -142,6 +144,9 @@ public class SetupWizardScript : MonoBehaviour {
 		foreach (KMSelectable prompt in accountPrompts)
 			prompt.OnInteract += delegate () { AccountPromptPress(prompt); return false; };
 
+		foreach (KMSelectable pg in page2Buttons)
+			pg.OnInteract += delegate () { Page2Press(pg); return false; };
+
 
 
 		reset.OnInteract += delegate () { ResetPress(); return false; };
@@ -187,10 +192,9 @@ public class SetupWizardScript : MonoBehaviour {
 
 		passwordDigits = equationSystem.GeneratedPassword();
 
-		var randomIxes = new int[6];
-
 		for (int i = 0; i < 6; i++)
-			randomIxes[i] = Range(0, 5);
+            randomIxes[i] = Range(0, 5);
+			
 
 		generatedPuzzle = equationSystem.GeneratedPuzzle(passwordDigits, randomIxes);
 		modifiedPuzzle = generatedPuzzle;
@@ -201,6 +205,29 @@ public class SetupWizardScript : MonoBehaviour {
 
 		for (int i = 0; i < 2; i++)
 			modifiedPuzzle[answersToShuffle[i]] = shuffledAnswers[i];
+
+		expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {(modifiedPuzzle[x].EquationExpression == "||" ? modifiedPuzzle[x].Answer.ToString("00") : modifiedPuzzle[x].Answer.ToString())}").ToList();
+
+		Log($"[Setup Wizard #{moduleId}] The password unmodified is: {passwordDigits.Join("")}");
+        Log($"[Setup Wizard #{moduleId}] *====================*");
+
+        for (int i = 0; i < 6; i++)
+			Log($"[Setup Wizard #{moduleId}] {expressionsToDisplay[i]}");
+
+        Log($"[Setup Wizard #{moduleId}] *====================*");
+
+        Log($"[Setup Wizard #{moduleId}] The swapped numbers for step 2 were: {answersToShuffle.Select(x => generatedPuzzle[x].Answer).Join(", ")}, which where in {answersToShuffle.Select(x => "a),b),c),d),e),f)".Split(',')[x]).Join(", ")}");
+
+		var obtainFinalLetter = ((Bomb.GetSerialNumberNumbers().Last() % 5) + 1) - 1;
+
+		var obtainSwaps = answersToShuffle.Select(x => generatedPuzzle[x].Answer).ToArray();
+
+		var minValue = Math.Min(obtainSwaps[0], obtainSwaps[1]);
+		var maxValue = Math.Max(obtainSwaps[0], obtainSwaps[1]);
+
+		finalPass = FinalPassword(passwordDigits.Join(""), equationSystem.Equation(randomIxes[obtainFinalLetter], maxValue, minValue) % 6);
+
+		Log($"[Setup Wizard #{moduleId}] The final password after shifting is: {finalPass}");
 
     }
 
@@ -215,16 +242,21 @@ public class SetupWizardScript : MonoBehaviour {
 		switch (Array.IndexOf(accountPrompts, prompt))
 		{
 			case 0:
+
 				if (canTypeUser)
 					return;
 
-				canTypeUser = !canTypeUser;
+				canTypePassword = false;
+
+				canTypeUser = true;
 				break;
 			case 1:
 				if (canTypePassword)
 					return;
 
-				canTypePassword = !canTypePassword;
+				canTypeUser = false;
+
+				canTypePassword = true;
 				break;
 		}
 	}
@@ -244,6 +276,9 @@ public class SetupWizardScript : MonoBehaviour {
 				{
 					case 0:
 						return;
+					case 3:
+						canSubmit = false;
+						goto default;
 					default:
 						currentPage--;
 						break;
@@ -259,10 +294,13 @@ public class SetupWizardScript : MonoBehaviour {
 						FolderUpdate();
 						goto default;
 					case 1:
-
+						Page2Update();
+						goto default;
+					case 2:
+						canSubmit = true;
 						goto default;
 					case 3:
-						if (usernameInput == username.GetUsername(Bomb) && passwordInput == passwordDigits.Join(""))
+						if (usernameInput == username.GetUsername(Bomb) && passwordInput == finalPass)
 						{
 							Log($"[Setup Wizard #{moduleId}] The username and password are correct. Moving over to the finish screen");
 							currentPage++;
@@ -274,9 +312,8 @@ public class SetupWizardScript : MonoBehaviour {
 						}
 						break;
 					case 4:
-						currentPage++;
 						canSolve = true;
-						break;
+						goto default;
 					case 5:
 						return;
 				}
@@ -290,7 +327,7 @@ public class SetupWizardScript : MonoBehaviour {
 	{
 		var mainText = mainButtons[1].GetComponentInChildren<TextMesh>().text;
 
-		mainButtons[1].GetComponentInChildren<TextMesh>().text = currentPos == 4 ? "Finish" : mainText;
+		mainButtons[1].GetComponentInChildren<TextMesh>().text = currentPage == 4 ? "Finish" : mainText;
 
 		if (currentPage == 5)
 		{
@@ -353,9 +390,34 @@ public class SetupWizardScript : MonoBehaviour {
 		for (int i = 0; i < 4; i++)
 		{
 			var ix = i + page2Ix;
-			expressionDisplays[i].text = $"{"a),b),c),d),e),f)".Split(',')[ix]} {modifiedPuzzle[ix].NumIxA} {modifiedPuzzle[ix].EquationExpression} {modifiedPuzzle[ix].NumIxB} = {modifiedPuzzle[ix].Answer}";
+			expressionDisplays[i].text = expressionsToDisplay[ix];
         }
 			
+	}
+
+	void Page2Press(KMSelectable pg)
+	{
+		pg.AddInteractionPunch(0.4f);
+		Audio.PlaySoundAtTransform("Click", transform);
+
+		if (moduleSolved || !isActivated)
+			return;
+
+		switch(Array.IndexOf(page2Buttons, pg))
+		{
+			case 0:
+				if (page2Ix == 0)
+					return;
+				page2Ix--;
+				Page2Update();
+				break;
+			case 1:
+				if (page2Ix == 2)
+					return;
+				page2Ix++;
+				Page2Update();
+				break;
+		}
 	}
 
 
@@ -367,7 +429,7 @@ public class SetupWizardScript : MonoBehaviour {
 		if (moduleSolved || !isActivated || !canSubmit && !canTypeUser)
 			return;
 
-		if (usernameInput.Length < 10)
+		if (usernameInput.Length < username.GetUsername(Bomb).Length)
 		{
             usernameInput += letter.GetComponentInChildren<TextMesh>().text;
 			accountPrompts[0].GetComponentInChildren<TextMesh>().text = usernameInput;
@@ -402,7 +464,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 		shiftedLetters = !shiftedLetters;
 
-		var letters = "QWERTYYUIOPASDFGHJKLZXCVBNM";
+		var letters = "QWERTYUIOPASDFGHJKLZXCVBNM";
 
 		for (int i = 0; i < 26; i++)
 			keyboardLetters[i].GetComponentInChildren<TextMesh>().text = shiftedLetters ? letters[i].ToString().ToUpperInvariant() : letters[i].ToString().ToLowerInvariant();
@@ -447,18 +509,18 @@ public class SetupWizardScript : MonoBehaviour {
 		if (canTypeUser)
 			if (usernameInput.Length > 0)
 			{
-				usernameInput.Remove(usernameInput.Length - 1);
-                accountPrompts[0].GetComponentInChildren<TextMesh>().text = passwordAsterisk;
+				usernameInput = usernameInput.Remove(usernameInput.Length - 1);
+                accountPrompts[0].GetComponentInChildren<TextMesh>().text = usernameInput;
             }
 		
-		else if (canTypePassword)
-				if (passwordInput.Length > 0)
-				{
-					passwordInput.Remove(passwordInput.Length - 1);
-					passwordAsterisk.Remove(passwordAsterisk.Length - 1);
-                    accountPrompts[1].GetComponentInChildren<TextMesh>().text = passwordAsterisk;
-                }
-	}
+		if (canTypePassword)
+            if (passwordInput.Length > 0 && passwordAsterisk.Length > 0)
+            {
+                passwordInput = passwordInput.Remove(passwordInput.Length - 1);
+                passwordAsterisk = passwordAsterisk.Remove(passwordAsterisk.Length - 1);
+                accountPrompts[1].GetComponentInChildren<TextMesh>().text = passwordAsterisk;
+            }
+    }
 
 	IEnumerator Startup()
 	{
@@ -505,6 +567,9 @@ public class SetupWizardScript : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.Backspace))
 				backSpace.OnInteract();
+
+			if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+				shift.OnInteract();
 
 
 		}

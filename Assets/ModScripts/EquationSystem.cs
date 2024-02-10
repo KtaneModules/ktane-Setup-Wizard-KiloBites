@@ -13,7 +13,7 @@ public class EquationSystem
         return numbs;
     }
 
-    private int Equation(int ix, int a, int b)
+    public int Equation(int ix, int a, int b)
     {
         switch (ix)
         {
@@ -34,11 +34,15 @@ public class EquationSystem
 
     public Expression[] GeneratedPuzzle(int[] password, int[] randomIxes)
     {
+        tryagain:
+
         var expressions = new Expression[6];
+
+        int[] ixes;
 
         for (int i = 0; i < 6; i++)
         {
-            int[] ixes;
+            
             var letters = "ABCDEF";
 
             while (true)
@@ -52,6 +56,10 @@ public class EquationSystem
             expressions[i] = new Expression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]]));
 
         }
+
+        if (!expressions.All(x => "ABCDEF".Contains(x.NumIxA)) && !expressions.All(x => "ABCDEF".Contains(x.NumIxB)))
+            goto tryagain;
+
              
         return expressions;
     }
