@@ -5138,6 +5138,14 @@ MonoBehaviour:
   shift: {fileID: 1180452959}
   reset: {fileID: 288236288}
   submit: {fileID: 1183619766}
+  mainTexts:
+  - {fileID: 503742108}
+  - {fileID: 849312206}
+  expressionDisplays:
+  - {fileID: 956202629}
+  - {fileID: 405968329}
+  - {fileID: 950400002}
+  - {fileID: 2036203150}
   window: {fileID: 1400908357}
   pages:
   - {fileID: 1436056858}
@@ -9866,7 +9874,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1436056859
 Transform:
   m_ObjectHideFlags: 0
@@ -13916,7 +13924,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2051467008
 Transform:
   m_ObjectHideFlags: 0
