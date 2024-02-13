@@ -7,7 +7,7 @@ public class Folder
 {
     public string FolderName { get; private set; }
     public int[] Directories { get; private set; }
-    public int? SingleDirectory {  get; private set; }
+    public int? SingleDirectory { get; private set; }
 
 
     public Folder(string folderName, int[] directories, int? singleDirectory = null)
