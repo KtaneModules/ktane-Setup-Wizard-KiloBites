@@ -75,7 +75,7 @@ public class EquationSystem
             case 1:
                 return Enumerable.Range(-9, 9).Any(x => (a - b) == x);
             case 2:
-                return multiplicationTable.Any(x => x.Any(y => a * b == y)); // Change it later in case we figured out how to check multiplication
+                return multiplicationTable.Any(x => x.Any(y => a * b == y));
             case 3:
                 if (b == 0)
                     return false;

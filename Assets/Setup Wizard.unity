@@ -1437,6 +1437,11 @@ Prefab:
       propertyPath: AudioClips.Array.data[3]
       value: 
       objectReference: {fileID: 8300000, guid: ef54be87f5b84f341ace71dd1ab6fe50, type: 3}
+    - target: {fileID: 114848120511536268, guid: 8814ea52310d2614a9feda02ec355ae4,
+        type: 2}
+      propertyPath: TwitchPlaysActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8814ea52310d2614a9feda02ec355ae4, type: 2}
   m_IsPrefabParent: 0
@@ -3391,7 +3396,9 @@ TextMesh:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 503742106}
-  m_Text: "Welcome to the Button Defuser \nInstaller Wizard"
+  m_Text: 'Welcome to the Button Defuser
+
+    Setup Wizard'
   m_OffsetZ: 0
   m_CharacterSize: 1
   m_LineSpacing: 1
@@ -5531,7 +5538,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 849312204}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.10963881, y: 0.026906645, z: -0.009389832}
+  m_LocalPosition: {x: -0.10963881, y: -0.04, z: -0.009}
   m_LocalScale: {x: 0.0012848722, y: 0.0015293994, z: 0.0013229903}
   m_Children: []
   m_Father: {fileID: 1436056859}
@@ -5545,7 +5552,7 @@ TextMesh:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 849312204}
-  m_Text: 'The wizard will guild you through the
+  m_Text: 'The wizard will guide you through the
 
     installation of Button Defuser.
 
@@ -9869,7 +9876,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1436056859}
   m_Layer: 0
-  m_Name: Start/Finish Page
+  m_Name: Start
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12163,7 +12170,7 @@ Transform:
   m_GameObject: {fileID: 1727999866}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 1.0441293, y: 1.0439284, z: 0.06793149}
+  m_LocalScale: {x: 0.9912963, y: 0.9911055, z: 0.016077025}
   m_Children: []
   m_Father: {fileID: 1183619765}
   m_RootOrder: 0

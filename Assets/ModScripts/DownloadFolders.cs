@@ -20,8 +20,8 @@ public class Folder
 
 public class ObtainUsername
 {
-    private Folder[] usedFolders, allFolders;
-    private Folder startingFolder;
+    private readonly Folder[] usedFolders, allFolders;
+    private readonly Folder startingFolder;
 
     public ObtainUsername(Folder[] usedFolders, Folder[] allFolders, Folder startingFolder)
     {
