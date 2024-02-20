@@ -17,6 +17,7 @@ public class SetupWizardScript : MonoBehaviour {
 	public KMSelectable backSpace, shift, reset, submit;
 
 	public TextMesh[] mainTexts, expressionDisplays;
+	public TextMesh windowText;
 
 	public GameObject window;
 	public GameObject[] pages;
@@ -43,7 +44,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 	private ObtainUsername username;
 
-	private Expression[] generatedPuzzle = new Expression[6], modifiedPuzzle = new Expression[6];
+	private WizardExpression[] generatedPuzzle = new WizardExpression[6], modifiedPuzzle = new WizardExpression[6];
 	private EquationSystem equationSystem = new EquationSystem();
 
 	private int currentPos, currentPage = 0, page2Ix = 0;
@@ -80,9 +81,9 @@ public class SetupWizardScript : MonoBehaviour {
 		return foldersSwapped;
 	}
 
-	private Expression[] SwapAnswers(int[] swaps)
+	private WizardExpression[] SwapAnswers(int[] swaps)
 	{
-		var swappedAnswers = new Expression[2];
+		var swappedAnswers = new WizardExpression[2];
 
 		var answersToSwap = swaps.Select(x => generatedPuzzle[x].Answer).ToArray();
 		var expressionALetters = swaps.Select(x => generatedPuzzle[x].NumIxA).ToArray();
@@ -90,7 +91,7 @@ public class SetupWizardScript : MonoBehaviour {
 		var expressionBLetters = swaps.Select(x => generatedPuzzle[x].NumIxB).ToArray();
 
 		for (int i = 0; i < 2; i++)
-			swappedAnswers[i] = new Expression(expressionALetters[i], expressionEquationExp[i], expressionBLetters[i], answersToSwap[i == 0 ? 1 : 0]);
+			swappedAnswers[i] = new WizardExpression(expressionALetters[i], expressionEquationExp[i], expressionBLetters[i], answersToSwap[i == 0 ? 1 : 0]);
 
 		return swappedAnswers;
 	}
@@ -194,7 +195,7 @@ public class SetupWizardScript : MonoBehaviour {
 
        
 
-        var obtainFinalLetter = ((Bomb.GetSerialNumberNumbers().Last() % 5) + 1) - 1;
+        var obtainFinalLetter = Bomb.GetSerialNumberNumbers().Last() % 5;
 
         var obtainSwaps = answersToShuffle.Select(x => generatedPuzzle[x].Answer).ToArray();
 
@@ -233,18 +234,11 @@ public class SetupWizardScript : MonoBehaviour {
 		switch (Array.IndexOf(accountPrompts, prompt))
 		{
 			case 0:
-
-				if (canTypeUser)
-					return;
-
 				canTypePassword = false;
 
 				canTypeUser = true;
 				break;
 			case 1:
-				if (canTypePassword)
-					return;
-
 				canTypeUser = false;
 
 				canTypePassword = true;
@@ -342,6 +336,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 			windowIcon.material = windowIcons[1];
 			submit.gameObject.SetActive(true);
+			windowText.text = "Button Defuser";
 
 			return;
 		}
@@ -560,23 +555,31 @@ public class SetupWizardScript : MonoBehaviour {
 		if (moduleSolved || !isActivated)
 			return;
 
-		if (moduleSelected && canTypeUser || canTypePassword)
+		if (moduleSelected)
 		{
-			for (int ltr = 0; ltr < 26; ltr++)
-				if (Input.GetKeyDown(((char)('a' + ltr)).ToString()))
-				{
-					keyboardLetters[GetLetterIndex((char)('A' + ltr))].OnInteract();
-					return;
-				}
 
-			var validNumPresses = new[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9, KeyCode.Alpha0 };
+			if (canTypeUser)
+			{
+                for (int ltr = 0; ltr < 26; ltr++)
+                    if (Input.GetKeyDown(((char)('a' + ltr)).ToString()))
+                    {
+                        keyboardLetters[GetLetterIndex((char)('A' + ltr))].OnInteract();
+                        return;
+                    }
+            }
+			else if (canTypePassword)
+			{
+                var validNumPresses = new[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9, KeyCode.Alpha0 };
 
-			for (int num = 0; num < validNumPresses.Length; num++)
-				if (Input.GetKeyDown(validNumPresses[num]))
-				{
-					keyboardNumbers[num].OnInteract();
-					return;
-				}
+                for (int num = 0; num < validNumPresses.Length; num++)
+                    if (Input.GetKeyDown(validNumPresses[num]))
+                    {
+                        keyboardNumbers[num].OnInteract();
+                        return;
+                    }
+            }
+
+			
 
 			if (Input.GetKeyDown(KeyCode.Backspace))
 				backSpace.OnInteract();
@@ -598,7 +601,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 	IEnumerator ProcessTwitchCommand(string command)
     {
-		string[] split = command.ToUpperInvariant().Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+		string[] split = command.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 		yield return null;
 
 		if ("BACK".ContainsIgnoreCase(split[0]))
@@ -656,7 +659,7 @@ public class SetupWizardScript : MonoBehaviour {
 				yield break;
 			}
 
-			if (split[1] == "2" && folderButtons[1].gameObject.activeSelf)
+			if (split[1] == "2" && folders[currentPos].Directories == null)
 			{
 				yield return "sendtochaterror Folder 2 isn't available currently!";
 				yield break;
@@ -714,7 +717,7 @@ public class SetupWizardScript : MonoBehaviour {
 			yield break;
 		}
 
-		if ("USERNAME".ContainsIgnoreCase(split[1]))
+		if ("USERNAME".ContainsIgnoreCase(split[0]))
 		{
 			if (currentPage != 3)
 			{
@@ -804,13 +807,97 @@ public class SetupWizardScript : MonoBehaviour {
 				keyboardNumbers[num].OnInteract();
 				yield return new WaitForSeconds(0.1f);
 			}
+
+			yield break;
         }
+
+		if ("DONE".ContainsIgnoreCase(split[0]))
+		{
+			if (currentPage != 4)
+			{
+				yield return "sendtochaterror The module is not installed yet!";
+				yield break;
+			}
+
+			if (split.Length > 1)
+				yield break;
+
+			submit.OnInteract();
+			yield return new WaitForSeconds(0.1f);
+		}
 		
     }
 
 	IEnumerator TwitchHandleForcedSolve()
     {
 		yield return null;
+
+		while (!isActivated)
+			yield return true;
+
+		while (currentPage != 3)
+		{
+			mainButtons[1].OnInteract();
+			yield return new WaitForSeconds(0.1f);
+		}
+
+		var usernameToType = username.GetUsername(Bomb);
+
+		if (usernameInput != usernameToType)
+		{
+			if (!canTypeUser)
+			{
+				accountPrompts[0].OnInteract();
+				yield return new WaitForSeconds(0.1f);
+			}
+
+			while (!usernameToType.StartsWith(usernameInput))
+			{
+				backSpace.OnInteract();
+				yield return new WaitForSeconds(0.1f);
+			}
+
+			for (int i = usernameInput.Length; i < usernameToType.Length; i++)
+			{
+				if ((char.IsUpper(usernameToType[i]) && !shiftedLetters) || (char.IsLower(usernameToType[i]) && shiftedLetters))
+				{
+					shift.OnInteract();
+					yield return new WaitForSeconds(0.1f);
+				}
+
+				keyboardLetters[GetLetterIndex(char.ToUpperInvariant(usernameToType[i]))].OnInteract();
+
+				yield return new WaitForSeconds(0.1f);
+			}
+		}
+
+		if (passwordInput != finalPass)
+		{
+			if (!canTypePassword)
+			{
+				accountPrompts[1].OnInteract();
+				yield return new WaitForSeconds(0.1f);
+			}
+
+			while (!finalPass.StartsWith(passwordInput))
+			{
+				backSpace.OnInteract();
+				yield return new WaitForSeconds(0.1f);
+			}
+
+			var digitsToPress = finalPass.Select(x => "1234567890".IndexOf(x)).ToArray();
+
+			for (int i = passwordInput.Length; i < finalPass.Length; i++)
+			{
+				keyboardNumbers[digitsToPress[i]].OnInteract();
+				yield return new WaitForSeconds(0.1f);
+			}
+		}
+
+		mainButtons[1].OnInteract();
+		yield return new WaitForSeconds(0.1f);
+		submit.OnInteract();
+		yield return new WaitForSeconds(0.1f);
     }
 
 

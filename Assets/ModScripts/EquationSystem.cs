@@ -32,11 +32,11 @@ public class EquationSystem
         return -1;
     }
 
-    public Expression[] GeneratedPuzzle(int[] password, int[] randomIxes)
+    public WizardExpression[] GeneratedPuzzle(int[] password, int[] randomIxes)
     {
         tryagain:
 
-        var expressions = new Expression[6];
+        var expressions = new WizardExpression[6];
 
         int[] ixes;
 
@@ -53,7 +53,7 @@ public class EquationSystem
                     break;
             }
 
-            expressions[i] = new Expression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]]));
+            expressions[i] = new WizardExpression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]]));
 
         }
 
@@ -93,14 +93,14 @@ public class EquationSystem
 
 }
 
-public class Expression
+public class WizardExpression
 {
     public char NumIxA { get; private set; }
     public string EquationExpression { get; private set; }
     public char NumIxB { get; private set; }
     public int Answer { get; private set; }
 
-    public Expression(char numIxA, string equationExpression, char numIxB, int answer)
+    public WizardExpression(char numIxA, string equationExpression, char numIxB, int answer)
     {
         NumIxA = numIxA;
         EquationExpression = equationExpression;

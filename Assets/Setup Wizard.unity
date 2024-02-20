@@ -5153,6 +5153,7 @@ MonoBehaviour:
   - {fileID: 405968329}
   - {fileID: 950400002}
   - {fileID: 2036203150}
+  windowText: {fileID: 1827443178}
   window: {fileID: 1400908357}
   pages:
   - {fileID: 1436056858}
@@ -12170,7 +12171,7 @@ Transform:
   m_GameObject: {fileID: 1727999866}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 0.9912963, y: 0.9911055, z: 0.016077025}
+  m_LocalScale: {x: 1.0210352, y: 1.0208386, z: 0.016559334}
   m_Children: []
   m_Father: {fileID: 1183619765}
   m_RootOrder: 0
