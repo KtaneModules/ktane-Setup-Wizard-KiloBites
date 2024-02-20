@@ -615,6 +615,12 @@ public class SetupWizardScript : MonoBehaviour {
 				yield break;
 			}
 
+			if (currentPage == 4)
+			{
+				yield return "sendtochaterror You cannot go back since the setup wizard is finished!";
+				yield break;
+			}
+
 			mainButtons[0].OnInteract();
 			yield return new WaitForSeconds(0.1f);
 			yield break;
