@@ -14,7 +14,11 @@ MonoBehaviour:
   id: setupWizard
   title: Setup Wizard
   author: Kilo Bites & EpicToast
-  description: 
+  description: 'Warning: Installing unknown applications can put your bomb at risk
+    of malware and your body at risk of exploding.
+
+
+    Determine the username and password to install the module.'
   version: 1
   outputFolder: build
   previewImage: {fileID: 0}
