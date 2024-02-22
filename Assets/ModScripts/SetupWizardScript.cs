@@ -35,7 +35,7 @@ public class SetupWizardScript : MonoBehaviour {
 		new Folder("Pictures", new int[] { 3, 5 }),
 		new Folder("Documents", new int[] { 0, 1 }),
 		new Folder("Music", new int[] { 0, 5 }),
-		new Folder("Homework", null, 2),
+		new Folder("Homework", new int[] { 2, 3 }),
 		new Folder("Videos", new int[] { 2, 4 })
 	};
 
@@ -63,18 +63,9 @@ public class SetupWizardScript : MonoBehaviour {
 
 		var foldersToSwap = swaps.Select(x => folders[x].FolderName).ToArray();
 		var foldersDirectories = swaps.Select(x => folders[x].Directories).ToArray();
-		var foldersSingleDirectory = swaps.Select(x => folders[x].SingleDirectory).ToArray();
 
 		for (int i = 0; i < 2; i++)
-		{
-			if (foldersDirectories[i] == null)
-			{
-				foldersSwapped[i] = new Folder(foldersToSwap[i == 0 ? 1 : 0], null, foldersSingleDirectory[i]);
-				continue;
-			}
-
 			foldersSwapped[i] = new Folder(foldersToSwap[i == 0 ? 1 : 0], foldersDirectories[i]);
-		}
 
 
 
@@ -165,6 +156,10 @@ public class SetupWizardScript : MonoBehaviour {
 
 		Log($"[Setup Wizard #{moduleId}] The starting folder for step 1 is: {startingFolder.FolderName}");
 		Log($"[Setup Wizard #{moduleId}] The swapped folders for step 1 were: {foldersToShuffle.Select(x => folders[x].FolderName).Join(", ")}");
+		var firstLetterResult = "SETUPWIZARD".Contains(Bomb.GetSerialNumberLetters().First()) ? "The first letter of the serial number contains a letter in \"SETUPWIZARD\". Use the first swapped folder in alphabetical order" : "The first letter of the serial number doesn't contain a letter in \"SETUPWIZARD\". Use the second swapped folder in alphabetical order.";
+		Log($"[Setup Wizard #{moduleId}] {firstLetterResult}");
+		var lastLetterResult = "COMPUTERLAB".Contains(Bomb.GetSerialNumberLetters().Last()) ? "The last letter of the serial number contains a letter in \"COMPUTERLAB\". Use the swapped folders for the rows and the starting folder for the columns." : "The last letter of the serial number doesn't contain a letter in \"COMPUTERLAB\". Use the swapped folders for the columns and the starting folder for the rows.";
+		Log($"[Setup Wizard #{moduleId}] {lastLetterResult}");
 		Log($"[Setup Wizard #{moduleId}] The username should be {username.GetUsername(Bomb)}");
 
 		GeneratePassword();
@@ -202,19 +197,19 @@ public class SetupWizardScript : MonoBehaviour {
         var minValue = Math.Min(obtainSwaps[0], obtainSwaps[1]);
         var maxValue = Math.Max(obtainSwaps[0], obtainSwaps[1]);
 
-		if ((minValue == 0 && randomIxes[obtainFinalLetter] == 3) || (minValue < 0 && randomIxes[obtainFinalLetter] == 4))
+		if ((minValue == 0 && obtainFinalLetter == 3) || (minValue < 0 && obtainFinalLetter == 4))
 			goto tryagain;
 
 		if (equationSystem.Equation(randomIxes[obtainFinalLetter], maxValue, minValue) < 0)
 			goto tryagain;
 
-        finalPass = FinalPassword(passwordDigits.Join(""), equationSystem.Equation(randomIxes[obtainFinalLetter], maxValue, minValue) % 6);
+        finalPass = FinalPassword(passwordDigits.Join(""), equationSystem.Equation(obtainFinalLetter, maxValue, minValue) % 6);
 
         Log($"[Setup Wizard #{moduleId}] The password unmodified is: {passwordDigits.Join("")}");
         Log($"[Setup Wizard #{moduleId}] *====================*");
 
         foreach (var expression in expressionsToDisplay)
-            Log($"Setup Wizard #{moduleId}] {expression}");
+            Log($"[Setup Wizard #{moduleId}] {expression}");
 
         Log($"[Setup Wizard #{moduleId}] *====================*");
 
@@ -317,9 +312,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 	void WindowUpdate()
 	{
-		var mainText = mainButtons[1].GetComponentInChildren<TextMesh>().text;
-
-		mainButtons[1].GetComponentInChildren<TextMesh>().text = currentPage == 3 ? "Finish" : mainText;
+		mainButtons[1].GetComponentInChildren<TextMesh>().text = currentPage == 3 ? "Finish" : "Next >";
 
 		Color32[] grayed = { new Color32(0, 0, 0, 60), Color.black };
 
@@ -357,30 +350,18 @@ public class SetupWizardScript : MonoBehaviour {
 
 		var ix = Array.IndexOf(folderButtons, folder);
 
-		currentPos = shuffledFolders[currentPos].Directories == null ? shuffledFolders[currentPos].SingleDirectory.Value : shuffledFolders[currentPos].Directories[ix];
+		currentPos = shuffledFolders[currentPos].Directories[ix];
 
 		FolderUpdate();
 	}
 
 	void FolderUpdate()
 	{
+        var folderNames = shuffledFolders[currentPos].Directories.Select(x => folders[x].FolderName).ToArray();
 
-		if (shuffledFolders[currentPos].Directories == null)
-		{
-			folderButtons[1].gameObject.SetActive(false);
-			folderButtons[0].GetComponentInChildren<TextMesh>().text = shuffledFolders[folders[currentPos].SingleDirectory.Value].FolderName;
-		}
-		else
-		{
-			folderButtons[1].gameObject.SetActive(true);
-
-			var folderNames = shuffledFolders[currentPos].Directories.Select(x => folders[x].FolderName).ToArray();
-
-			for (int i = 0; i < 2; i++)
-				folderButtons[i].GetComponentInChildren<TextMesh>().text = folderNames[i];
-		}
-
-	}
+        for (int i = 0; i < 2; i++)
+            folderButtons[i].GetComponentInChildren<TextMesh>().text = folderNames[i];
+    }
 
 	void Page2Update()
 	{

@@ -7,14 +7,12 @@ public class Folder
 {
     public string FolderName { get; private set; }
     public int[] Directories { get; private set; }
-    public int? SingleDirectory { get; private set; }
 
 
-    public Folder(string folderName, int[] directories, int? singleDirectory = null)
+    public Folder(string folderName, int[] directories)
     {
         FolderName = folderName;
         Directories = directories;
-        SingleDirectory = singleDirectory;
     }
 }
 
@@ -50,21 +48,22 @@ public class ObtainUsername
 
     public string GetUsername(KMBombInfo bomb)
     {
-        var idxes = usedFolders.OrderBy(x => x.FolderName).Select(x => Array.IndexOf(allFolders, x)).ToArray();
+        var idxes = usedFolders.Select(x => Array.IndexOf(allFolders, x)).ToList();
+        idxes.Sort();
         var startingIx = Array.IndexOf(allFolders, startingFolder);
 
         var completedUsername = new List<string>();
-        var obtainIxes = ("SETUPWIZARD".Contains(bomb.GetSerialNumberLetters().First()) ? "01" : "10").Select(x => int.Parse(x.ToString())).ToArray();
+        var firstCond = "SETUPWIZARD".Contains(bomb.GetSerialNumberLetters().First());
 
         if ("COMPUTERLAB".Contains(bomb.GetSerialNumberLetters().Last()))
         {
-            completedUsername.Add(tableA[idxes[obtainIxes[0]], startingIx]);
-            completedUsername.Add(tableB[idxes[obtainIxes[1]], startingIx]);
+            completedUsername.Add(tableA[idxes[firstCond ? 0 : 1], startingIx]);
+            completedUsername.Add(tableB[idxes[firstCond ? 1 : 0], startingIx]);
         }
         else
         {
-            completedUsername.Add(tableA[startingIx, idxes[obtainIxes[0]]]);
-            completedUsername.Add(tableB[startingIx, idxes[obtainIxes[1]]]);
+            completedUsername.Add(tableA[startingIx, idxes[firstCond ? 1 : 0]]);
+            completedUsername.Add(tableB[startingIx, idxes[firstCond ? 0 : 1]]);
         }
 
 

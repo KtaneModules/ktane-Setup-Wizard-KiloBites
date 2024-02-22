@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using static UnityEngine.Random;
 
 public class EquationSystem
@@ -34,34 +35,43 @@ public class EquationSystem
 
     public WizardExpression[] GeneratedPuzzle(int[] password, int[] randomIxes)
     {
-        tryagain:
+    tryagain:
 
-        var expressions = new WizardExpression[6];
+        var expressions = new List<WizardExpression>();
 
         int[] ixes;
+        int[] prev = new int[3];
 
         for (int i = 0; i < 6; i++)
         {
-            
+
             var letters = "ABCDEF";
 
             while (true)
             {
                 ixes = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
 
-                if (CheckCase(randomIxes[i], password[ixes[0]], password[ixes[1]]))
+                var ixesToCheck = new[] { randomIxes[i], ixes[0], ixes[1] };
+
+                if (CheckCase(randomIxes[i], password[ixes[0]], password[ixes[1]]) && (!ixesToCheck.SequenceEqual(prev) || expressions.Count() == 0))
+                {
+                    prev[0] = randomIxes[i];
+                    prev[1] = ixes[0];
+                    prev[2] = ixes[1];
                     break;
+                }
+
             }
 
-            expressions[i] = new WizardExpression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]]));
+            expressions.Add(new WizardExpression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]])));
 
         }
 
-        if (!expressions.All(x => "ABCDEF".Contains(x.NumIxA)) && !expressions.All(x => "ABCDEF".Contains(x.NumIxB)))
+        if ("ABCDEF".Any(x => expressions.All(y => x != y.NumIxA && x != y.NumIxB)))
             goto tryagain;
 
              
-        return expressions;
+        return expressions.ToArray();
     }
 
     private bool CheckCase(int ix, int a, int b)
