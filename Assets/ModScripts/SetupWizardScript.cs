@@ -43,6 +43,7 @@ public class SetupWizardScript : MonoBehaviour {
 	private Folder[] shuffledFolders;
 
 	private ObtainUsername username;
+	private string obtainedUsername;
 
 	private WizardExpression[] generatedPuzzle = new WizardExpression[6], modifiedPuzzle = new WizardExpression[6];
 	private EquationSystem equationSystem = new EquationSystem();
@@ -152,7 +153,8 @@ public class SetupWizardScript : MonoBehaviour {
 
 		startingFolder = folders[currentPos];
 
-		username = new ObtainUsername(foldersToShuffle.Select(x => folders[x]).ToArray(), folders, startingFolder);
+		username = new ObtainUsername(foldersToShuffle.Select(x => folders[x]).OrderBy(x => x.FolderName).ToArray(), folders, startingFolder);
+		obtainedUsername = username.GetUsername("SETUPWIZARD".Contains(Bomb.GetSerialNumberLetters().First()), "COMPUTERLAB".Contains(Bomb.GetSerialNumberLetters().Last()));
 
 		Log($"[Setup Wizard #{moduleId}] The starting folder for step 1 is: {startingFolder.FolderName}");
 		Log($"[Setup Wizard #{moduleId}] The swapped folders for step 1 were: {foldersToShuffle.Select(x => folders[x].FolderName).Join(", ")}");
@@ -160,7 +162,7 @@ public class SetupWizardScript : MonoBehaviour {
 		Log($"[Setup Wizard #{moduleId}] {firstLetterResult}");
 		var lastLetterResult = "COMPUTERLAB".Contains(Bomb.GetSerialNumberLetters().Last()) ? "The last letter of the serial number contains a letter in \"COMPUTERLAB\". Use the swapped folders for the rows and the starting folder for the columns." : "The last letter of the serial number doesn't contain a letter in \"COMPUTERLAB\". Use the swapped folders for the columns and the starting folder for the rows.";
 		Log($"[Setup Wizard #{moduleId}] {lastLetterResult}");
-		Log($"[Setup Wizard #{moduleId}] The username should be {username.GetUsername(Bomb)}");
+		Log($"[Setup Wizard #{moduleId}] The username should be {obtainedUsername}");
 
 		GeneratePassword();
 
@@ -186,7 +188,7 @@ public class SetupWizardScript : MonoBehaviour {
         for (int i = 0; i < 2; i++)
             modifiedPuzzle[answersToShuffle[i]] = shuffledAnswers[i];
 
-        expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {(modifiedPuzzle[x].EquationExpression == "||" ? modifiedPuzzle[x].Answer.ToString("00") : modifiedPuzzle[x].Answer.ToString())}").ToList();
+        expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {(modifiedPuzzle[x].EquationExpression == "||" && modifiedPuzzle[x].Answer >= 0 ? modifiedPuzzle[x].Answer.ToString("00") : modifiedPuzzle[x].Answer.ToString())}").ToList();
 
        
 
@@ -200,7 +202,7 @@ public class SetupWizardScript : MonoBehaviour {
 		if ((minValue == 0 && obtainFinalLetter == 3) || (minValue < 0 && obtainFinalLetter == 4))
 			goto tryagain;
 
-		if (equationSystem.Equation(randomIxes[obtainFinalLetter], maxValue, minValue) < 0)
+		if (equationSystem.Equation(obtainFinalLetter, maxValue, minValue) < 0)
 			goto tryagain;
 
         finalPass = FinalPassword(passwordDigits.Join(""), equationSystem.Equation(obtainFinalLetter, maxValue, minValue) % 6);
@@ -280,7 +282,7 @@ public class SetupWizardScript : MonoBehaviour {
 						canSubmit = true;
 						goto default;
 					case 3:
-						if (usernameInput == username.GetUsername(Bomb) && passwordInput == finalPass)
+						if (usernameInput == obtainedUsername && passwordInput == finalPass)
 						{
 							Log($"[Setup Wizard #{moduleId}] The username and password are correct. The setup is now finished and the application is running.");
 							currentPage++;
@@ -291,8 +293,8 @@ public class SetupWizardScript : MonoBehaviour {
 						{
 							var result = new List<string>();
 
-							if (usernameInput != username.GetUsername(Bomb))
-								result.Add(usernameInput.Length > 0 ? $"(Expected username is {username.GetUsername(Bomb)}, but inputted {usernameInput})" : "(Username input is empty)");
+							if (usernameInput != obtainedUsername)
+								result.Add(usernameInput.Length > 0 ? $"(Expected username is {obtainedUsername}, but inputted {usernameInput})" : "(Username input is empty)");
 
 							if (passwordInput != finalPass)
 								result.Add(passwordInput.Length > 0 ? $"(Expected password is {finalPass}, but inputted {passwordInput})" : "(Password input is empty)");
@@ -407,7 +409,7 @@ public class SetupWizardScript : MonoBehaviour {
 		if (moduleSolved || !isActivated || !canSubmit && !canTypeUser)
 			return;
 
-		if (usernameInput.Length < username.GetUsername(Bomb).Length)
+		if (usernameInput.Length < obtainedUsername.Length)
 		{
             usernameInput += letter.GetComponentInChildren<TextMesh>().text;
 			accountPrompts[0].GetComponentInChildren<TextMesh>().text = usernameInput;
@@ -585,6 +587,12 @@ public class SetupWizardScript : MonoBehaviour {
 		string[] split = command.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 		yield return null;
 
+		if (!isActivated)
+		{
+			yield return "sendtochaterror The module isn't activated yet!";
+			yield break;
+		}
+
 		if ("BACK".ContainsIgnoreCase(split[0]))
 		{
 			if (split.Length > 1)
@@ -718,7 +726,7 @@ public class SetupWizardScript : MonoBehaviour {
 				yield break;
 			}
 
-			if (split[1].Length > username.GetUsername(Bomb).Length)
+			if (split[1].Length > obtainedUsername.Length)
 				yield break;
 
 			if (!split[1].All(x => char.IsLetter(x)))
@@ -828,7 +836,7 @@ public class SetupWizardScript : MonoBehaviour {
 			yield return new WaitForSeconds(0.1f);
 		}
 
-		var usernameToType = username.GetUsername(Bomb);
+		var usernameToType = obtainedUsername;
 
 		if (usernameInput != usernameToType)
 		{

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KModkit;
+using static UnityEngine.Debug;
 
 public class Folder
 {
@@ -46,24 +46,28 @@ public class ObtainUsername
         { "Monkey", "Mate", "Pie", "Tapeworm", "Berg", "Spork" }
     };
 
-    public string GetUsername(KMBombInfo bomb)
+    public string GetUsername(bool firstCond, bool secondCond)
     {
-        var idxes = usedFolders.Select(x => Array.IndexOf(allFolders, x)).ToList();
-        idxes.Sort();
+        var idxes = usedFolders.Select(x => Array.IndexOf(allFolders, x)).ToArray();
+
         var startingIx = Array.IndexOf(allFolders, startingFolder);
 
         var completedUsername = new List<string>();
-        var firstCond = "SETUPWIZARD".Contains(bomb.GetSerialNumberLetters().First());
 
-        if ("COMPUTERLAB".Contains(bomb.GetSerialNumberLetters().Last()))
+        Log(startingFolder.FolderName);
+        Log(idxes.Select(x => allFolders[x].FolderName).Join(", "));
+        Log(firstCond);
+        Log(secondCond);
+
+        if (secondCond)
         {
             completedUsername.Add(tableA[idxes[firstCond ? 0 : 1], startingIx]);
             completedUsername.Add(tableB[idxes[firstCond ? 1 : 0], startingIx]);
         }
         else
         {
-            completedUsername.Add(tableA[startingIx, idxes[firstCond ? 1 : 0]]);
-            completedUsername.Add(tableB[startingIx, idxes[firstCond ? 0 : 1]]);
+            completedUsername.Add(tableA[startingIx, idxes[firstCond ? 0 : 1]]);
+            completedUsername.Add(tableB[startingIx, idxes[firstCond ? 1 : 0]]);
         }
 
 
