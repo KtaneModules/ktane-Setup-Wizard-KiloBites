@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static UnityEngine.Debug;
 
 public class Folder
 {
@@ -53,11 +52,6 @@ public class ObtainUsername
         var startingIx = Array.IndexOf(allFolders, startingFolder);
 
         var completedUsername = new List<string>();
-
-        Log(startingFolder.FolderName);
-        Log(idxes.Select(x => allFolders[x].FolderName).Join(", "));
-        Log(firstCond);
-        Log(secondCond);
 
         if (secondCond)
         {

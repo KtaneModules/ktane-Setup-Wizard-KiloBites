@@ -29,7 +29,7 @@ public class SetupWizardScript : MonoBehaviour {
 	int moduleId;
 	private bool moduleSolved, isActivated, moduleSelected, canTypeUser, canTypePassword, shiftedLetters = true, canSubmit, canSolve;
 
-	private Folder[] folders =
+	private static Folder[] folders =
 	{
 		new Folder("Downloads", new int[] { 1, 4 }),
 		new Folder("Pictures", new int[] { 3, 5 }),
@@ -70,7 +70,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 
 
-		return foldersSwapped;
+		return foldersSwapped.ToArray();
 	}
 
 	private WizardExpression[] SwapAnswers(int[] swaps)
@@ -140,29 +140,31 @@ public class SetupWizardScript : MonoBehaviour {
 		StartCoroutine(Initialize());
 
 
-		currentPos = Range(0, 6);
-
-		shuffledFolders = folders;
+		shuffledFolders = folders.ToArray();
 
 		var foldersToShuffle = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
 
-		var swappedFolders = SwapFolders(foldersToShuffle);
+		currentPos = Range(0, folders.Length);
+
+        startingFolder = folders[currentPos];
+        username = new ObtainUsername(foldersToShuffle.Select(x => folders[x]).OrderBy(x => x.FolderName).ToArray(), folders, startingFolder);
+        obtainedUsername = username.GetUsername("SETUPWIZARD".Contains(Bomb.GetSerialNumberLetters().First()), "COMPUTERLAB".Contains(Bomb.GetSerialNumberLetters().Last()));
+
+        Log($"[Setup Wizard #{moduleId}] The starting folder for step 1 is: {startingFolder.FolderName}");
+        Log($"[Setup Wizard #{moduleId}] The swapped folders for step 1 were: {foldersToShuffle.Select(x => folders[x].FolderName).Join(", ")}");
+        var firstLetterResult = "SETUPWIZARD".Contains(Bomb.GetSerialNumberLetters().First()) ? "The first letter of the serial number contains a letter in \"SETUPWIZARD\". Use the first swapped folder in alphabetical order" : "The first letter of the serial number doesn't contain a letter in \"SETUPWIZARD\". Use the second swapped folder in alphabetical order.";
+        Log($"[Setup Wizard #{moduleId}] {firstLetterResult}");
+        var lastLetterResult = "COMPUTERLAB".Contains(Bomb.GetSerialNumberLetters().Last()) ? "The last letter of the serial number contains a letter in \"COMPUTERLAB\". Use the swapped folders for the rows and the starting folder for the columns." : "The last letter of the serial number doesn't contain a letter in \"COMPUTERLAB\". Use the swapped folders for the columns and the starting folder for the rows.";
+        Log($"[Setup Wizard #{moduleId}] {lastLetterResult}");
+        Log($"[Setup Wizard #{moduleId}] The username should be {obtainedUsername}");
+
+        var swappedFolders = SwapFolders(foldersToShuffle).ToArray();
 
 		for (int i = 0; i < 2; i++)
-			shuffledFolders[foldersToShuffle[i]] = swappedFolders[i];
+            shuffledFolders[foldersToShuffle[i]] = swappedFolders[i];
+		
 
-		startingFolder = folders[currentPos];
-
-		username = new ObtainUsername(foldersToShuffle.Select(x => folders[x]).OrderBy(x => x.FolderName).ToArray(), folders, startingFolder);
-		obtainedUsername = username.GetUsername("SETUPWIZARD".Contains(Bomb.GetSerialNumberLetters().First()), "COMPUTERLAB".Contains(Bomb.GetSerialNumberLetters().Last()));
-
-		Log($"[Setup Wizard #{moduleId}] The starting folder for step 1 is: {startingFolder.FolderName}");
-		Log($"[Setup Wizard #{moduleId}] The swapped folders for step 1 were: {foldersToShuffle.Select(x => folders[x].FolderName).Join(", ")}");
-		var firstLetterResult = "SETUPWIZARD".Contains(Bomb.GetSerialNumberLetters().First()) ? "The first letter of the serial number contains a letter in \"SETUPWIZARD\". Use the first swapped folder in alphabetical order" : "The first letter of the serial number doesn't contain a letter in \"SETUPWIZARD\". Use the second swapped folder in alphabetical order.";
-		Log($"[Setup Wizard #{moduleId}] {firstLetterResult}");
-		var lastLetterResult = "COMPUTERLAB".Contains(Bomb.GetSerialNumberLetters().Last()) ? "The last letter of the serial number contains a letter in \"COMPUTERLAB\". Use the swapped folders for the rows and the starting folder for the columns." : "The last letter of the serial number doesn't contain a letter in \"COMPUTERLAB\". Use the swapped folders for the columns and the starting folder for the rows.";
-		Log($"[Setup Wizard #{moduleId}] {lastLetterResult}");
-		Log($"[Setup Wizard #{moduleId}] The username should be {obtainedUsername}");
+		
 
 		GeneratePassword();
 
@@ -198,6 +200,9 @@ public class SetupWizardScript : MonoBehaviour {
 
         var minValue = Math.Min(obtainSwaps[0], obtainSwaps[1]);
         var maxValue = Math.Max(obtainSwaps[0], obtainSwaps[1]);
+
+		if (minValue == maxValue)
+			goto tryagain;
 
 		if ((minValue == 0 && obtainFinalLetter == 3) || (minValue < 0 && obtainFinalLetter == 4))
 			goto tryagain;
@@ -359,10 +364,11 @@ public class SetupWizardScript : MonoBehaviour {
 
 	void FolderUpdate()
 	{
-        var folderNames = shuffledFolders[currentPos].Directories.Select(x => folders[x].FolderName).ToArray();
+
+        var folderNames = shuffledFolders[currentPos].Directories.Select(x => folders[x]).ToArray();
 
         for (int i = 0; i < 2; i++)
-            folderButtons[i].GetComponentInChildren<TextMesh>().text = folderNames[i];
+            folderButtons[i].GetComponentInChildren<TextMesh>().text = folderNames[i].FolderName;
     }
 
 	void Page2Update()

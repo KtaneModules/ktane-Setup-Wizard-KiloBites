@@ -53,7 +53,7 @@ public class EquationSystem
 
                 var ixesToCheck = new[] { randomIxes[i], ixes[0], ixes[1] };
 
-                if (CheckCase(randomIxes[i], password[ixes[0]], password[ixes[1]]) && (!ixesToCheck.SequenceEqual(prev) || expressions.Count() == 0))
+                if (CheckCase(randomIxes[i], password[ixes[0]], password[ixes[1]]) && (!ixesToCheck.SequenceEqual(prev) || expressions.Count() == 0 || Equation(ixesToCheck[0], ixesToCheck[1], ixesToCheck[2]) != Equation(prev[0], prev[1], prev[2])))
                 {
                     prev[0] = randomIxes[i];
                     prev[1] = ixes[0];
