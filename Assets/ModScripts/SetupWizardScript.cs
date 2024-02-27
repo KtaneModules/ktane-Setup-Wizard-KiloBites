@@ -25,8 +25,8 @@ public class SetupWizardScript : MonoBehaviour {
 	public Material[] blackScreens, backgrounds, windowIcons;
 	public MeshRenderer windowIcon, screen;
 
-	static int moduleIdCounter = 1;
-	int moduleId;
+	static int moduleIdCounter = 1, setupWizardIdCounter = 1;
+	int moduleId, setupWizardId;
 	private bool moduleSolved, isActivated, moduleSelected, canTypeUser, canTypePassword, shiftedLetters = true, canSubmit, canSolve;
 
 	private static Folder[] folders =
@@ -94,6 +94,7 @@ public class SetupWizardScript : MonoBehaviour {
 	{
 
 		moduleId = moduleIdCounter++;
+		setupWizardId = setupWizardIdCounter++;
 
 		foreach (KMSelectable letter in keyboardLetters)
 			letter.OnInteract += delegate () { KeyboardLetterPress(letter); return false; };
@@ -142,7 +143,10 @@ public class SetupWizardScript : MonoBehaviour {
 
 		shuffledFolders = folders.ToArray();
 
-		var foldersToShuffle = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
+		var folderSwapA = Range(0, folders.Length);
+		var folderSwapB = Enumerable.Range(0, folders.Length).Where(x => x != folderSwapA).PickRandom();
+
+		var foldersToShuffle = new[] { folderSwapA, folderSwapB };
 
 		currentPos = Range(0, folders.Length);
 
@@ -161,7 +165,7 @@ public class SetupWizardScript : MonoBehaviour {
         var swappedFolders = SwapFolders(foldersToShuffle).ToArray();
 
 		for (int i = 0; i < 2; i++)
-            shuffledFolders[foldersToShuffle[i]] = swappedFolders[i];
+            shuffledFolders[foldersToShuffle[i]].FolderName = swappedFolders[i].FolderName;
 		
 
 		
@@ -170,7 +174,12 @@ public class SetupWizardScript : MonoBehaviour {
 
 	}
 
-	void GeneratePassword()
+    private void OnDestroy()
+    {
+		setupWizardIdCounter = 1;
+    }
+
+    void GeneratePassword()
 	{
 		tryagain:
 
@@ -207,7 +216,10 @@ public class SetupWizardScript : MonoBehaviour {
 		if ((minValue == 0 && obtainFinalLetter == 3) || (minValue < 0 && obtainFinalLetter == 4))
 			goto tryagain;
 
-		if (equationSystem.Equation(obtainFinalLetter, maxValue, minValue) < 0)
+		if (randomIxes.Count(x => x == 3) >= 2 && generatedPuzzle.Count(x => "/".Contains(x.EquationExpression) && x.Answer == 0) >= 2)
+			goto tryagain;
+
+        if (equationSystem.Equation(obtainFinalLetter, maxValue, minValue) < 0)
 			goto tryagain;
 
         finalPass = FinalPassword(passwordDigits.Join(""), equationSystem.Equation(obtainFinalLetter, maxValue, minValue) % 6);
@@ -365,10 +377,10 @@ public class SetupWizardScript : MonoBehaviour {
 	void FolderUpdate()
 	{
 
-        var folderNames = shuffledFolders[currentPos].Directories.Select(x => folders[x]).ToArray();
+        var folderNames = shuffledFolders[currentPos].Directories.Select(x => folders[x].FolderName).ToArray();
 
-        for (int i = 0; i < 2; i++)
-            folderButtons[i].GetComponentInChildren<TextMesh>().text = folderNames[i].FolderName;
+		for (int i = 0; i < 2; i++)
+			folderButtons[i].GetComponentInChildren<TextMesh>().text = folderNames[i];
     }
 
 	void Page2Update()
@@ -488,7 +500,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 		yield return new WaitForSeconds(1);
 
-		Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.TitleMenuPressed, transform);
+		Audio.PlaySoundAtTransform("Reset", transform);
 		isActivated = true;
 		window.SetActive(true);
 	}
@@ -519,8 +531,10 @@ public class SetupWizardScript : MonoBehaviour {
 
 	IEnumerator Startup()
 	{
-		Audio.PlaySoundAtTransform("Window Setup", transform);
-		screen.material = backgrounds.PickRandom();
+		if (setupWizardId == 1)
+            Audio.PlaySoundAtTransform("Window Setup", transform);
+
+        screen.material = backgrounds.PickRandom();
 
 		yield return new WaitForSeconds(1);
 

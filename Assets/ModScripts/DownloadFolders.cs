@@ -4,7 +4,7 @@ using System.Linq;
 
 public class Folder
 {
-    public string FolderName { get; private set; }
+    public string FolderName { get; set; }
     public int[] Directories { get; private set; }
 
 

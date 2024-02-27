@@ -21,4 +21,4 @@ MonoBehaviour:
     Determine the username and password to install the module.'
   version: 1
   outputFolder: build
-  previewImage: {fileID: 0}
+  previewImage: {fileID: 2800000, guid: 562bd4a3386bb734db26124c87b6978f, type: 3}
