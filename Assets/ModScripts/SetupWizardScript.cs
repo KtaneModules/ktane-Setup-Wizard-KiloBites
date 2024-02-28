@@ -674,12 +674,6 @@ public class SetupWizardScript : MonoBehaviour {
 				yield break;
 			}
 
-			if (split[1] == "2" && folders[currentPos].Directories == null)
-			{
-				yield return "sendtochaterror Folder 2 isn't available currently!";
-				yield break;
-			}
-
 			folderButtons[int.Parse(split[1]) - 1].OnInteract();
 			yield return new WaitForSeconds(0.1f);
 			yield break;
