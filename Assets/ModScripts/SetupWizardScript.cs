@@ -29,7 +29,7 @@ public class SetupWizardScript : MonoBehaviour {
 	int moduleId, setupWizardId;
 	private bool moduleSolved, isActivated, moduleSelected, canTypeUser, canTypePassword, shiftedLetters = true, canSubmit, canSolve;
 
-	private static Folder[] folders =
+	private Folder[] folders =
 	{
 		new Folder("Downloads", new int[] { 1, 4 }),
 		new Folder("Pictures", new int[] { 3, 5 }),
