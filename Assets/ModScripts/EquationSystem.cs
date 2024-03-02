@@ -76,8 +76,6 @@ public class EquationSystem
 
     private bool CheckCase(int ix, int a, int b)
     {
-        var multiplicationTable = Enumerable.Range(0, 9).Select(x => Enumerable.Range(0, 9).Select(y => x * y).ToArray()).ToArray();
-
         switch (ix)
         {
             case 0:
@@ -85,9 +83,8 @@ public class EquationSystem
             case 1:
                 return Enumerable.Range(-9, 9).Any(x => (a - b) == x);
             case 2:
-                return multiplicationTable.Any(x => x.Any(y => a * b == y));
             case 3:
-                if (b == 0)
+                if (new[] { a, b }.Any(x => x == 0))
                     return false;
 
                 return a % b == 0;

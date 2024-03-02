@@ -6,6 +6,7 @@ using UnityEngine;
 using KModkit;
 using static UnityEngine.Random;
 using static UnityEngine.Debug;
+using System.Reflection.Emit;
 
 public class SetupWizardScript : MonoBehaviour {
 
@@ -199,7 +200,19 @@ public class SetupWizardScript : MonoBehaviour {
         for (int i = 0; i < 2; i++)
             modifiedPuzzle[answersToShuffle[i]] = shuffledAnswers[i];
 
-        expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {(modifiedPuzzle[x].EquationExpression == "||" && modifiedPuzzle[x].Answer >= 0 ? modifiedPuzzle[x].Answer.ToString("00") : modifiedPuzzle[x].Answer.ToString())}").ToList();
+		var answersToDisplay = Enumerable.Range(0, 6).Select(x => generatedPuzzle[x].Answer).ToArray();
+		var modifiedAnswers = new string[6];
+
+		for (int i = 0; i < 6; i++)
+			modifiedAnswers[i] = randomIxes[i] == 4 && generatedPuzzle[i].Answer >= 0 ? answersToDisplay[i].ToString("00") : answersToDisplay[i].ToString();
+
+		var swappedStrings = answersToShuffle.Select(x => modifiedAnswers[x]).ToArray();
+
+		for (int i = 0; i < 2; i++)
+			modifiedAnswers[answersToShuffle[i]] = swappedStrings[i == 0 ? 1 : 0];
+
+
+        expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {modifiedAnswers[x]}").ToList();
 
        
 
