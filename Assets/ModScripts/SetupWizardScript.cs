@@ -6,7 +6,6 @@ using UnityEngine;
 using KModkit;
 using static UnityEngine.Random;
 using static UnityEngine.Debug;
-using System.Reflection.Emit;
 
 public class SetupWizardScript : MonoBehaviour {
 
@@ -189,7 +188,7 @@ public class SetupWizardScript : MonoBehaviour {
         for (int i = 0; i < 6; i++)
             randomIxes[i] = Range(0, 5);
 
-
+		//Debug.LogFormat("{0}", passwordDigits.Join());
         generatedPuzzle = equationSystem.GeneratedPuzzle(passwordDigits, randomIxes);
         modifiedPuzzle = generatedPuzzle.ToArray();
 		//Log(generatedPuzzle.Select(a => string.Format("{0}{1}{2} = {3}", a.NumIxA, a.EquationExpression, a.NumIxB, a.Answer)).Join(", "));
