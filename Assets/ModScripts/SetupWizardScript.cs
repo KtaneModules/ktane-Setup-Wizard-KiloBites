@@ -915,11 +915,12 @@ public class SetupWizardScript : MonoBehaviour {
 			}
 		}
 
-	solved:;
-
 		mainButtons[1].OnInteract();
 		yield return new WaitForSeconds(0.1f);
-		submit.OnInteract();
+
+    solved:;
+
+        submit.OnInteract();
 		yield return new WaitForSeconds(0.1f);
     }
 
