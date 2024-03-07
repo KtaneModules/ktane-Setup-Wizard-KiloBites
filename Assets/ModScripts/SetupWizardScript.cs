@@ -853,6 +853,9 @@ public class SetupWizardScript : MonoBehaviour {
 		while (!isActivated)
 			yield return true;
 
+		if (currentPage == 4)
+			goto solved;
+
 		while (currentPage != 3)
 		{
 			mainButtons[1].OnInteract();
@@ -911,6 +914,8 @@ public class SetupWizardScript : MonoBehaviour {
 				yield return new WaitForSeconds(0.1f);
 			}
 		}
+
+	solved:;
 
 		mainButtons[1].OnInteract();
 		yield return new WaitForSeconds(0.1f);
