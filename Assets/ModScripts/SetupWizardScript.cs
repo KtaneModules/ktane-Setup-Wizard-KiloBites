@@ -6,7 +6,6 @@ using UnityEngine;
 using KModkit;
 using static UnityEngine.Random;
 using static UnityEngine.Debug;
-using System.Reflection.Emit;
 
 public class SetupWizardScript : MonoBehaviour {
 
@@ -189,11 +188,13 @@ public class SetupWizardScript : MonoBehaviour {
         for (int i = 0; i < 6; i++)
             randomIxes[i] = Range(0, 5);
 
-
+		//Debug.LogFormat("{0}", passwordDigits.Join());
         generatedPuzzle = equationSystem.GeneratedPuzzle(passwordDigits, randomIxes);
-        modifiedPuzzle = generatedPuzzle;
+        modifiedPuzzle = generatedPuzzle.ToArray();
+		//Log(generatedPuzzle.Select(a => string.Format("{0}{1}{2} = {3}", a.NumIxA, a.EquationExpression, a.NumIxB, a.Answer)).Join(", "));
+		//Log(modifiedPuzzle.Select(a => string.Format("{0}{1}{2} = {3}", a.NumIxA, a.EquationExpression, a.NumIxB, a.Answer)).Join(", "));
 
-        var answersToShuffle = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
+		var answersToShuffle = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
 
         var shuffledAnswers = SwapAnswers(answersToShuffle);
 
@@ -206,13 +207,19 @@ public class SetupWizardScript : MonoBehaviour {
 		for (int i = 0; i < 6; i++)
 			modifiedAnswers[i] = randomIxes[i] == 4 && generatedPuzzle[i].Answer >= 0 ? answersToDisplay[i].ToString("00") : answersToDisplay[i].ToString();
 
+		//Log(passwordDigits.Join(", "));
 		var swappedStrings = answersToShuffle.Select(x => modifiedAnswers[x]).ToArray();
-
+		//Log(swappedStrings.Join(", "));
+		//Log(generatedPuzzle.Select(a => string.Format("{0}{1}{2}",a.NumIxA,a.EquationExpression,a.NumIxB)).Join(", "));
+		//Log(modifiedAnswers.Join(", "));
 		for (int i = 0; i < 2; i++)
 			modifiedAnswers[answersToShuffle[i]] = swappedStrings[i == 0 ? 1 : 0];
+		//Log(modifiedAnswers.Join(", "));
 
+		//Log(generatedPuzzle.Select(a => string.Format("{0}{1}{2} = {3}", a.NumIxA, a.EquationExpression, a.NumIxB, a.Answer)).Join(", "));
+		//Log(modifiedPuzzle.Select(a => string.Format("{0}{1}{2} = {3}", a.NumIxA, a.EquationExpression, a.NumIxB, a.Answer)).Join(", "));
 
-        expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {modifiedAnswers[x]}").ToList();
+		expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {modifiedAnswers[x]}").ToList();
 
        
 

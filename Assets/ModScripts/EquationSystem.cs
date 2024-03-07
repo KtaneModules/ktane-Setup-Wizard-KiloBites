@@ -1,16 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using static UnityEngine.Random;
+using UnityEngine;
 
 public class EquationSystem
 {
     public int[] GeneratedPassword()
     {
         var numbs = new int[6];
-
-        for (int i = 0; i < numbs.Length; i++)
-            numbs[i] = Range(0, 10);
-
+        do
+        {
+            for (int i = 0; i < numbs.Length; i++)
+                numbs[i] = Range(0, 10);
+        }
+        while (Enumerable.Range(0, 9).Any(a => numbs.Count(b => b == a) >= 3));
         return numbs;
     }
 
@@ -40,7 +43,8 @@ public class EquationSystem
         var expressions = new List<WizardExpression>();
 
         int[] ixes;
-        int[] prev = new int[3];
+        var allPrev = new List<int[]>();
+        //int[] prev = new int[3];
 
         for (int i = 0; i < 6; i++)
         {
@@ -52,12 +56,20 @@ public class EquationSystem
                 ixes = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
 
                 var ixesToCheck = new[] { randomIxes[i], ixes[0], ixes[1] };
-
-                if (CheckCase(randomIxes[i], password[ixes[0]], password[ixes[1]]) && (!ixesToCheck.SequenceEqual(prev) || !(ixesToCheck[0] == prev[0] && ixesToCheck[1] == prev[2] && ixesToCheck[2] == prev[1]) || expressions.Count() == 0 || Equation(ixesToCheck[0], ixesToCheck[1], ixesToCheck[2]) != Equation(prev[0], prev[1], prev[2])))
+                /* A slew of checks to determine if the expression generated:
+                * - uses the exact same combination of variables and operations as its previous
+                * - shares the same value as another value.
+                * - follows special rules denoting the operations.
+                */
+                if (CheckCase(randomIxes[i], password[ixes[0]], password[ixes[1]]) &&
+                    (expressions.Count() == 0 ||
+                    !allPrev.Any(a => ixesToCheck.SequenceEqual(a) ||
+                    (ixesToCheck[0] == a[0] && ixesToCheck[1] == a[2] && ixesToCheck[2] == a[1]) ||
+                    (Equation(ixesToCheck[0], password[ixesToCheck[1]], password[ixesToCheck[2]]) == Equation(a[0], password[a[1]], password[a[2]])))
+                    ))
                 {
-                    prev[0] = randomIxes[i];
-                    prev[1] = ixes[0];
-                    prev[2] = ixes[1];
+                    //Debug.LogFormat("{0}", ixesToCheck.Join());
+                    allPrev.Add(ixesToCheck);
                     break;
                 }
 
