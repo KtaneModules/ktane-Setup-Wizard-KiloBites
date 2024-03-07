@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using static UnityEngine.Random;
-using UnityEngine;
 
 public class EquationSystem
 {
@@ -44,7 +43,6 @@ public class EquationSystem
 
         int[] ixes;
         var allPrev = new List<int[]>();
-        //int[] prev = new int[3];
 
         for (int i = 0; i < 6; i++)
         {
@@ -68,7 +66,6 @@ public class EquationSystem
                     (Equation(ixesToCheck[0], password[ixesToCheck[1]], password[ixesToCheck[2]]) == Equation(a[0], password[a[1]], password[a[2]])))
                     ))
                 {
-                    //Debug.LogFormat("{0}", ixesToCheck.Join());
                     allPrev.Add(ixesToCheck);
                     break;
                 }
