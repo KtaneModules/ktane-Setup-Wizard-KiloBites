@@ -708,7 +708,7 @@ public class SetupWizardScript : MonoBehaviour {
 			var validPg = new[] { "UP", "DOWN" };
 
 
-            if (!validPg.Contains(split[1]))
+            if (!validPg.Contains(split[1].ToUpperInvariant()))
 			{
 				yield return $"sendtochaterror {split[1]} is not valid!";
 				yield break;
