@@ -608,7 +608,7 @@ public class SetupWizardScript : MonoBehaviour {
 
 
 #pragma warning disable 414
-	private readonly string TwitchHelpMessage = @"!{0} back/next goes to the previous/next page. || !{0} reset resets back to the original state. || !{0} folder 1/2 navigates to said folder. || !{0} page up/down to navigate through the system of equations. || !{0} username [input] types down the username you want to input. || !{0} password [input] types down the password you want to input. || !{0} done solves the module once the green defuse button appears.";
+	private readonly string TwitchHelpMessage = @"!{0} back/next goes to the previous/next page. || !{0} reset resets back to the original state. || !{0} folder 1/2 navigates to said folder. || !{0} folders outputs what folders are currently present. || !{0} page up/down to navigate through the system of equations. || !{0} username [input] types down the username you want to input. || !{0} password [input] types down the password you want to input. || !{0} done solves the module once the green defuse button appears.";
 #pragma warning restore 414
 
 	IEnumerator ProcessTwitchCommand(string command)
@@ -685,6 +685,26 @@ public class SetupWizardScript : MonoBehaviour {
 
 			folderButtons[int.Parse(split[1]) - 1].OnInteract();
 			yield return new WaitForSeconds(0.1f);
+			yield break;
+		}
+
+		if ("FOLDERS".ContainsIgnoreCase(split[0]))
+		{
+			if (currentPage != 1)
+			{
+				yield return "sendtochaterror You are not at step 1!";
+				yield break;
+			}
+
+			if (split.Length > 1)
+				yield break;
+
+			var folderNames = new List<string>();
+
+			foreach (KMSelectable folder in folderButtons)
+				folderNames.Add(folder.GetComponentInChildren<TextMesh>().text);
+
+			yield return $"sendtochat The current folders present are: {folderNames.Join(", ")}";
 			yield break;
 		}
 
