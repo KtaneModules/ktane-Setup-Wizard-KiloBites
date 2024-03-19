@@ -734,7 +734,7 @@ public class SetupWizardScript : MonoBehaviour {
 				yield break;
 			}
 
-			var press = Array.IndexOf(validPg, split[1]);
+			var press = Array.IndexOf(validPg, split[1].ToUpperInvariant());
 
 			if (press == 0 && page2Ix == 0)
 			{
