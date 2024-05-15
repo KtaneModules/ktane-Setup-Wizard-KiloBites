@@ -181,14 +181,24 @@ public class SetupWizardScript : MonoBehaviour {
 
     void GeneratePassword()
 	{
-		tryagain:
+	tryagain:
 
-        passwordDigits = equationSystem.GeneratedPassword();
+		passwordDigits = equationSystem.GeneratedPassword();
 
-        for (int i = 0; i < 6; i++)
-            randomIxes[i] = Range(0, 5);
+		do
+			for (int i = 0; i < 6; i++)
+				randomIxes[i] = Range(0, 5);
+		while (Enumerable.Range(0, 5).Any(x => randomIxes.Count(y => x == y) >= 3));
 
-        generatedPuzzle = equationSystem.GeneratedPuzzle(passwordDigits, randomIxes);
+		try
+		{
+			generatedPuzzle = equationSystem.GeneratedPuzzle(passwordDigits, randomIxes);
+		}
+		catch (Exception)
+		{
+			goto tryagain;
+		}
+
         modifiedPuzzle = generatedPuzzle.ToArray();
 
 		var answersToShuffle = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
@@ -210,8 +220,6 @@ public class SetupWizardScript : MonoBehaviour {
 
 		expressionsToDisplay = Enumerable.Range(0, 6).Select(x => $"{"a),b),c),d),e),f)".Split(',')[x]} {modifiedPuzzle[x].NumIxA} {modifiedPuzzle[x].EquationExpression} {modifiedPuzzle[x].NumIxB} = {modifiedAnswers[x]}").ToList();
 
-       
-
         var obtainFinalLetter = Bomb.GetSerialNumberNumbers().Last() % 5;
 
         var obtainSwaps = answersToShuffle.Select(x => generatedPuzzle[x].Answer).ToArray();
@@ -224,13 +232,10 @@ public class SetupWizardScript : MonoBehaviour {
 
 		if ((minValue == 0 && obtainFinalLetter == 3) || (minValue < 0 && obtainFinalLetter == 4))
 			goto tryagain;
-
-		if (randomIxes.Count(x => x == 3) >= 2 && generatedPuzzle.Count(x => "/".Contains(x.EquationExpression) && x.Answer == 0) >= 2)
-			goto tryagain;
-
+		
         if (equationSystem.Equation(obtainFinalLetter, maxValue, minValue) < 0)
 			goto tryagain;
-
+		
         finalPass = FinalPassword(passwordDigits.Join(""), equationSystem.Equation(obtainFinalLetter, maxValue, minValue) % 6);
 
         Log($"[Setup Wizard #{moduleId}] The password unmodified is: {passwordDigits.Join("")}");

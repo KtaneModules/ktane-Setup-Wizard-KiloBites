@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using static UnityEngine.Random;
+using static UnityEngine.Debug;
 
 public class EquationSystem
 {
@@ -37,9 +39,11 @@ public class EquationSystem
 
     public WizardExpression[] GeneratedPuzzle(int[] password, int[] randomIxes)
     {
+        int tries = 0;
+
     tryagain:
 
-        var expressions = new List<WizardExpression>();
+        var expressions = new WizardExpression[6];
 
         int[] ixes;
         var allPrev = new List<int[]>();
@@ -52,6 +56,10 @@ public class EquationSystem
             while (true)
             {
                 ixes = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
+
+                if (tries >= 1000) // If at any point it cannot generate valid equations, the set used is completely busted, and it will have to start all over again.
+                    throw new Exception();
+                    
 
                 var ixesToCheck = new[] { randomIxes[i], ixes[0], ixes[1] };
                 /* A slew of checks to determine if the expression generated:
@@ -69,10 +77,10 @@ public class EquationSystem
                     allPrev.Add(ixesToCheck);
                     break;
                 }
-
+                tries++;
             }
 
-            expressions.Add(new WizardExpression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]])));
+            expressions[i] = new WizardExpression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]]));
 
         }
 
@@ -80,7 +88,7 @@ public class EquationSystem
             goto tryagain;
 
              
-        return expressions.ToArray();
+        return expressions;
     }
 
     private bool CheckCase(int ix, int a, int b)
