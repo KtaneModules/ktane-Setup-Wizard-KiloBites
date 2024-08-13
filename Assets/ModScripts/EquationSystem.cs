@@ -14,7 +14,7 @@ public class EquationSystem
             for (int i = 0; i < numbs.Length; i++)
                 numbs[i] = Range(0, 10);
         }
-        while (Enumerable.Range(0, 9).Any(a => numbs.Count(b => b == a) >= 3));
+        while (Enumerable.Range(0, 10).Any(a => numbs.Count(b => b == a) >= 3) || numbs.Count(a => a == 0) > 1);
         return numbs;
     }
 
@@ -44,8 +44,13 @@ public class EquationSystem
     tryagain:
 
         var expressions = new WizardExpression[6];
+		
+		int[] listA = Enumerable.Range(0, 6).ToList().Shuffle().ToArray();
+		int[] listB = listA.ToList().Shuffle().ToArray();
+		for (int x = 0; x < 6; x++)
+			if (listA[x] == listB[x])
+				goto tryagain;
 
-        int[] ixes;
         var allPrev = new List<int[]>();
 
         for (int i = 0; i < 6; i++)
@@ -55,19 +60,18 @@ public class EquationSystem
 
             while (true)
             {
-                ixes = Enumerable.Range(0, 6).ToList().Shuffle().Take(2).ToArray();
 
                 if (tries >= 1000) // If at any point it cannot generate valid equations, the set used is completely busted, and it will have to start all over again.
                     throw new Exception();
                     
 
-                var ixesToCheck = new[] { randomIxes[i], ixes[0], ixes[1] };
+                var ixesToCheck = new[] { randomIxes[i], listA[i], listB[i] };
                 /* A slew of checks to determine if the expression generated:
                 * - uses the exact same combination of variables and operations as its previous
                 * - shares the same value as another value.
                 * - follows special rules denoting the operations.
                 */
-                if (CheckCase(randomIxes[i], password[ixes[0]], password[ixes[1]]) &&
+                if (CheckCase(randomIxes[i], password[listA[i]], password[listB[i]]) &&
                     (expressions.Count() == 0 ||
                     !allPrev.Any(a => ixesToCheck.SequenceEqual(a) ||
                     (ixesToCheck[0] == a[0] && ixesToCheck[1] == a[2] && ixesToCheck[2] == a[1]) ||
@@ -80,7 +84,7 @@ public class EquationSystem
                 tries++;
             }
 
-            expressions[i] = new WizardExpression(letters[ixes[0]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[ixes[1]], Equation(randomIxes[i], password[ixes[0]], password[ixes[1]]));
+            expressions[i] = new WizardExpression(letters[listA[i]], "+,-,*,/,||".Split(',')[randomIxes[i]], letters[listB[i]], Equation(randomIxes[i], password[listA[i]], password[listB[i]]));
 
         }
 

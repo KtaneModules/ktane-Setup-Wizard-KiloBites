@@ -649,6 +649,22 @@ public class SetupWizardScript : MonoBehaviour {
 			yield break;
 		}
 
+		if ("RESET".ContainsIgnoreCase(split[0]))
+		{
+			if (split.Length > 1)
+				yield break;
+
+			if (currentPage == 0)
+			{
+				yield return "sendtochaterror You have already resetted!";
+				yield break;
+			}
+
+			reset.OnInteract();
+			yield return new WaitForSeconds(0.1f);
+			yield break;
+		}
+
 		if ("NEXT".ContainsIgnoreCase(split[0]))
 		{
 			if (split.Length > 1)
